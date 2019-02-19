@@ -1,0 +1,55 @@
+#include winsock2.h
+#include iphlpapi.h
+#include icmpapi.h
+#include stdio.h
+
+#pragma comment(lib, iphlpapi.lib)
+#pragma comment(lib, ws2_32.lib)
+
+int __cdecl main(int argc, char argv)
+{
+	HANDLE hIcmpFile;
+	LPVOID reply_buffer = NULL;
+	DWORD reply_size = 0;
+
+	hIcmpFile = IcmpCreateFile();
+	if (hIcmpFile == INVALID_HANDLE_VALUE) {
+		printf(tUnable to open handle.n);
+		printf(IcmpCreatefile returned error %ldn, GetLastError() );
+	}
+	else {
+		printf(tHandle created.n);
+
+		reply_size = sizeof (ICMP_ECHO_REPLY);
+		reply_buffer = (VOID ) malloc(reply_size);
+		PICMP_ECHO_REPLY pecho_reply;
+
+		IcmpParseReplies(reply_buffer, (int)sizeof(reply_buffer));
+		pecho_reply = (PICMP_ECHO_REPLY) reply_buffer;
+
+WaitForEchoReply(
+		printf(t  Status = %ld  , pecho_reply-Status);
+		switch (pecho_reply-Status) {
+case IP_SUCCESS
+	printf((Destination host was unreachable)n);
+	break;
+case IP_DEST_HOST_UNREACHABLE
+	printf((Destination host was unreachable)n);
+	break;
+case IP_DEST_NET_UNREACHABLE
+	printf((Destination Network was unreachable)n);
+	break;
+case IP_REQ_TIMED_OUT
+	printf((Request timed out)n);
+	break;
+default
+	printf(n);
+	break;
+		}
+
+		 Need to close the handle when done using it
+		IcmpCloseHandle(hIcmpFile);
+	}  
+	system(pause);
+	return 0;
+}
